@@ -79,13 +79,13 @@ if __name__ == '__main__':
     patient_resource_manager.run()
 
     encounter_resource_manager = FHIREncounterResourceManager()
-    # encounter_resource_manager.run()
+    encounter_resource_manager.run()
 
     procedure_manager = FHIRProcedureResourceManager()
-    # procedure_manager.run()
+    procedure_manager.run()
 
     observation_manager = FHIRObservationResourceManager()
-    # observation_manager.run()
+    observation_manager.run()
 
     end_time = datetime.now()
     print('The processing program ended at ', end_time)
