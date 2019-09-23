@@ -66,23 +66,27 @@ class FHIRObservationResourceManager(FHIRResourcesManager):
         self.model = Observation(db=db)
         print('There are ' + str(len(observations)) + ' to be processed in this batch')
         for observation in observations:
-            source_id = observation.get('id', None)
-            patient = self.get_patient(observation)
-            encounter = self.get_encounter(observation)
-
-            date = self.get_date(observation)
-
-            data = {
-                'source_id': source_id,
-                'patient': patient,
-                'encounter': encounter,
-                'observation_date': date
-            }
-            data = {**data, **self.get_type_value_data(observation)}
+            data = self.run_observation_process(observation)
             if data['value'] is not None:
                 self.store(data, db)
         db.close()
         print('Done processing ' + str(len(observations)) + ' for this batch ')
+
+    def run_observation_process(self, observation):
+        source_id = observation.get('id', None)
+        patient = self.get_patient(observation)
+        encounter = self.get_encounter(observation)
+
+        date = self.get_date(observation)
+
+        data = {
+            'source_id': source_id,
+            'patient': patient,
+            'encounter': encounter,
+            'observation_date': date
+        }
+        data = {**data, **self.get_type_value_data(observation)}
+        return data
 
     def get_patient(self, observation):
 

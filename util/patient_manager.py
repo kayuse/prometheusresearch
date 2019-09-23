@@ -100,5 +100,5 @@ class FHIRPatientResourcesManager(FHIRResourcesManager):
 
     def store(self, data, db):
         self.model = Patient(db=db)
-        d = self.model.insert(data=data)
+        id = self.model.insert(data=data)
         return id

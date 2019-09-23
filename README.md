@@ -19,7 +19,7 @@ configure db in the config.ini using your own db settings
 ```
 ## Note
 This is a multiprocess event, so there is a tendency for it to take a chunk of your CPU Process while running. 
-This was done so as to enable the application to run faster. You can reduce the processor pool to you specified number 
+This was done so as to enable the application to run faster. You can reduce the processor pool to your specified number 
 in each of the resource manager class.
 
 ## Usage

@@ -65,23 +65,26 @@ class FHIRProcedureResourceManager(FHIRResourcesManager):
         print('There are ' + str(len(procedures)) + ' to be processed in this batch')
         self.model = Procedure(db=db)
         for procedure in procedures:
-            source_id = procedure.get('id', None)
-            patient = self.get_patient(procedure)
-            encounter = self.get_encounter(procedure)
-            date = self.get_date(procedure)
-            type_code, type_code_system = self.get_type_code_data(procedure)
-            data = {
-                'source_id': source_id,
-                'patient': patient,
-                'encounter': encounter,
-                'procedure_date': date,
-                'type_code': type_code,
-                'type_code_system': type_code_system
-            }
-
+            data = self.run_procedure_process(procedure)
             self.store(data, db)
         db.close()
         print('Done processing ' + str(len(procedures)) + ' procedures')
+
+    def run_procedure_process(self, procedure):
+        source_id = procedure.get('id', None)
+        patient = self.get_patient(procedure)
+        encounter = self.get_encounter(procedure)
+        date = self.get_date(procedure)
+        type_code, type_code_system = self.get_type_code_data(procedure)
+        data = {
+            'source_id': source_id,
+            'patient': patient,
+            'encounter': encounter,
+            'procedure_date': date,
+            'type_code': type_code,
+            'type_code_system': type_code_system
+        }
+        return data
 
     def get_patient(self, procedure):
 

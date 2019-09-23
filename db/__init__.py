@@ -29,9 +29,10 @@ class DB:
             self.cursor = self.connection.cursor()
             self.connection.autocommit = True
             self.create_tables()
-            return self.connection
+            return self
         except (Exception, psycopg2.Error) as error:
             print("Error while connecting to PostgreSQL", error)
+            return None
 
     def create_tables(self):
         try:
