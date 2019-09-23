@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-import psycopg2,sys
+import psycopg2, sys
 
 
 class BaseModel(ABC):
@@ -43,8 +43,6 @@ class App(BaseModel):
             if self.db.connection:
                 print("Failed to insert record into app table", error)
                 return None
-    def get_total_records(self):
-        pass
 
     def query(self, query):
         pass
@@ -62,6 +60,75 @@ class App(BaseModel):
         except (Exception, psycopg2.Error) as error:
             print("Error in update operation", error)
             return None
+
+
+class Report(BaseModel):
+    def __init__(self, db):
+        super().__init__(db)
+
+    def query(self, query):
+        pass
+
+    def get_top_procedure_types(self, limit):
+        query = """SELECT type_code_system,type_code,count(type_code) as c 
+            FROM public.procedure group by (type_code,type_code_system) order by c desc limit %limit"""
+        query = query.replace("%limit", str(limit))
+        self.db.cursor.execute(query)
+        row = self.db.cursor.fetchall()
+        return row
+
+    def no_of_patient_by_gender(self):
+        query = """SELECT gender,count(gender) from patient GROUP BY gender"""
+        self.db.cursor.execute(query)
+        row = self.db.cursor.fetchall()
+        male = row[0]
+        female = row[1]
+        return male, female
+
+    def count_patient(self):
+        query = """SELECT count(*) as c FROM patient"""
+        self.db.cursor.execute(query)
+        row = self.db.cursor.fetchone()
+        return row[0]
+
+    def count_encounter(self):
+        query = """SELECT count(*) as c FROM encounter"""
+        self.db.cursor.execute(query)
+        row = self.db.cursor.fetchone()
+        return row[0]
+
+    def count_procedure(self):
+        query = """SELECT count(*) as c FROM procedure"""
+        self.db.cursor.execute(query)
+        row = self.db.cursor.fetchone()
+        return row[0]
+
+    def count_observation(self):
+        query = """SELECT count(*) as c FROM observation"""
+        self.db.cursor.execute(query)
+        row = self.db.cursor.fetchone()
+        return row[0]
+
+    def get_most_popular_day(self):
+        query = """SELECT EXTRACT(DOW FROM start_date) as days, COUNT(EXTRACT(DOW FROM start_date)) as days_count FROM encounter GROUP BY days ORDER BY days_count DESC LIMIT 1"""
+        self.db.cursor.execute(query)
+        row = self.db.cursor.fetchone()
+        return row
+
+    def get_least_popular_day(self):
+        query = """SELECT EXTRACT(DOW FROM start_date) as days, COUNT(EXTRACT(DOW FROM start_date)) as days_count FROM encounter GROUP BY days ORDER BY days_count ASC LIMIT 1"""
+        self.db.cursor.execute(query)
+        row = self.db.cursor.fetchone()
+        return row
+
+    def get(self, data):
+        pass
+
+    def insert(self, data):
+        pass
+
+    def update(self, data):
+        pass
 
 
 class Patient(BaseModel):
