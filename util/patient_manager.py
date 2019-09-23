@@ -1,14 +1,18 @@
 from .base_manager import FHIRResourcesManager
 from db.manager import Patient
+from db import DB
 import ndjson, sys
-import requests
+import requests, math
+
+from multiprocessing import Process, Pool
 
 
 class FHIRPatientResourcesManager(FHIRResourcesManager):
+    pool_count = 2
 
-    def __init__(self, db):
-        super().__init__(db=db)
-        self.model = Patient(db=self.db)
+    def __init__(self):
+        super().__init__()
+        # self.model = Patient(db=self.db)
         self.base_url = self.base_url + 'Patient.ndjson'
 
     def fetch(self):
@@ -16,12 +20,28 @@ class FHIRPatientResourcesManager(FHIRResourcesManager):
         with requests.get(self.base_url, stream=True) as r:
             print('Request successful')
             items = r.json(cls=ndjson.Decoder)
-            self.process(items)
+            total_items = len(items)
+
+            item_cursor = 0
+            batch_count = math.ceil(total_items / self.pool_count)
+            to_item = batch_count
+            processes = []
+            for i in range(self.pool_count):
+                current_item = items[item_cursor:to_item]
+                item_cursor += batch_count
+                to_item += batch_count
+                p = Process(target=self.process, args=(current_item,))
+                processes.append(p)
+
+            [x.start() for x in processes]
+            [x.join() for x in processes]
 
     def run(self):
         self.fetch()
 
     def process(self, patients):
+        db = DB()
+        db.connect()
         for patient in patients:
             source_id = patient.get('id', None)
             birth_date = patient.get('birthDate', None)
@@ -39,8 +59,8 @@ class FHIRPatientResourcesManager(FHIRResourcesManager):
                 'ethnicity_code_system': extensions['ethnicity'].get('system'),
             }
 
-
-            self.store(data)
+            self.store(data, db)
+        db.close()
 
     def get_country(self, patient):
         address = patient.get('address', None)
@@ -75,6 +95,7 @@ class FHIRPatientResourcesManager(FHIRResourcesManager):
 
         return extracted_extensions
 
-    def store(self, data):
-        id = self.model.insert(data=data)
+    def store(self, data, db):
+        self.model = Patient(db=db)
+        d = self.model.insert(data=data)
         return id

@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-import psycopg2
+import psycopg2,sys
 
 
 class BaseModel(ABC):
@@ -26,6 +26,42 @@ class BaseModel(ABC):
         pass
 
 
+class App(BaseModel):
+    def __init__(self, db):
+        super().__init__(db)
+
+    def insert(self, data):
+        try:
+            query = """INSERT INTO app(name,started_at) 
+        VALUES(%s, %s)"""
+            insert_data = (data.get('name'), data.get('started_at'))
+            self.db.cursor.execute(query, insert_data)
+            self.db.cursor.execute('SELECT LASTVAL()')
+            return self.db.cursor.fetchone()[0]
+
+        except (Exception, psycopg2.Error) as error:
+            if self.db.connection:
+                print("Failed to insert record into app table", error)
+                return None
+
+    def query(self, query):
+        pass
+
+    def get(self, data):
+        pass
+
+    def update(self, data):
+        try:
+            query = """UPDATE app set %set_fieldname = %s WHERE %get_fieldname = %s"""
+            query = query.replace('%set_fieldname', data['set_fieldname']).replace('%get_fieldname', 'get_fieldname')
+            self.db.cursor.execute(query, (data['set_value'], data['get_value']))
+            self.db.connect.commit()
+            return self.db.cursor.fetchone()[0]
+        except (Exception, psycopg2.Error) as error:
+            print("Error in update operation", error)
+            return None
+
+
 class Patient(BaseModel):
 
     def __init__(self, db):
@@ -39,14 +75,16 @@ class Patient(BaseModel):
             insert_data = (data.get('source_id'), data.get('birth_date'), data.get('gender'), data.get('race_code'),
                            data.get('race_code_system'), data.get('ethnicity_code'), data.get('ethnicity_code_system'),
                            data.get('country'))
+
             self.db.cursor.execute(query, insert_data)
             self.db.connection.commit()
             return self.db.cursor.rowcount
 
         except (Exception, psycopg2.Error) as error:
-            if self.db.connection:
-                print("Failed to insert record into patient table", error)
-                return None
+
+            print("Failed to insert record into patient table", error)
+            sys.exit()
+            return None
 
     def query(self, query):
         pass
@@ -127,7 +165,6 @@ class Procedure(BaseModel):
         super().__init__(db=db)
 
     def insert(self, data):
-        print('im here')
         try:
             query = """INSERT INTO procedure(source_id, patient_id, encounter_id, procedure_date, type_code,
              type_code_system) 
@@ -143,7 +180,7 @@ class Procedure(BaseModel):
 
             if self.db.connection:
                 self.db.connection.rollback()
-                print("Failed to insert record into mobile table", error)
+                print("Failed to insert record into procedure table", error)
                 return None
 
     def query(self, query):
@@ -179,7 +216,7 @@ class Observation(BaseModel):
 
         except (Exception, psycopg2.Error) as error:
             if self.db.connection:
-                print("Failed to insert record into mobile table", error)
+                print("Failed to store record into observation table", error)
                 return None
 
     def query(self, query):

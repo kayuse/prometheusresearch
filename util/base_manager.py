@@ -10,7 +10,7 @@ class FHIRResourcesManager(ABC):
     fhis_ethinicity_url = 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-ethnicity'
     model = BaseModel
 
-    def __init__(self, db):
+    def __init__(self, db=None):
         self.db = db
 
     @abstractmethod
@@ -26,5 +26,5 @@ class FHIRResourcesManager(ABC):
         pass
 
     @abstractmethod
-    def store(self, data):
+    def store(self, data, db):
         pass

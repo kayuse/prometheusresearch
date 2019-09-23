@@ -1,19 +1,28 @@
 import psycopg2
+import configparser
 
 
 class DB:
     instance = None
 
-    def __init__(self, host, port, user, password, database):
-        self.host = host
-        self.user = user
-        self.port = port
-        self.password = password
-        self.database = database
+    def __init__(self):
+        config = configparser.ConfigParser()
+        config.read('config.ini')
+        self.host = config['DB']['host']
+        self.user = config['DB']['user']
+        self.port = config['DB']['port']
+        self.password = config['DB']['password']
+        self.database = config['DB']['database']
+        self.url = "postgresql://{}:{}@{}/{}".format(self.user, self.password, self.host, self.database)
         self.connection = None
         self.cursor = None
 
+    def init(self):
+        self.connect()
+        self.clear_tables()
+
     def connect(self):
+
         try:
             self.connection = psycopg2.connect(user=self.user, password=self.password, host=self.host, port=self.port,
                                                database=self.database)
@@ -26,6 +35,7 @@ class DB:
 
     def create_tables(self):
         try:
+
             self.create_patient_table()
             self.create_encounter_table()
             self.create_observation_table()
@@ -34,9 +44,17 @@ class DB:
             print(error)
             self.close()
 
+    def clear_tables(self):
+        try:
+            query = """TRUNCATE TABLE patient,encounter,observation,procedure;"""
+            self.cursor.execute(query)
+            self.connection.commit()
+        except(Exception, psycopg2.DatabaseError) as error:
+            print(error)
+
     def create_patient_table(self):
         create_patient_table = '''
-        
+
         CREATE SEQUENCE IF NOT EXISTS patient_id_seq
         START WITH 1
         INCREMENT BY 1  
@@ -57,6 +75,26 @@ class DB:
                         CONSTRAINT patient_pkey PRIMARY KEY (id)
                     )'''
         self.cursor.execute(create_patient_table)
+        self.connection.commit()
+
+    def create_app_table(self):
+        create_app_table = '''
+
+            CREATE SEQUENCE IF NOT EXISTS app_id_seq
+            START WITH 1
+            INCREMENT BY 1  
+            NO MINVALUE
+            NO MAXVALUE
+            CACHE 1;
+            CREATE TABLE IF NOT EXISTS public.app
+                        (
+                            id integer NOT NULL DEFAULT nextval('app_id_seq'::regclass),
+                            name text COLLATE pg_catalog."default" NOT NULL,
+                            started_at timestamp without time zone NOT NULL,
+                            ended_at timestamp without time zone,
+                            CONSTRAINT app_pkey PRIMARY KEY (id)
+                        )'''
+        self.cursor.execute(create_app_table)
         self.connection.commit()
 
     def create_encounter_table(self):

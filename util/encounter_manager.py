@@ -1,14 +1,16 @@
 from .base_manager import FHIRResourcesManager
 from db.manager import Encounter, Patient
-import sys, requests, ndjson
+from db import DB
+from multiprocessing import Process
+import sys, requests, ndjson, math
 
 
 class FHIREncounterResourceManager(FHIRResourcesManager):
+    pool_count = 3
 
-    def __init__(self, db):
-        super().__init__(db=db)
+    def __init__(self):
+        super().__init__()
         self.base_url = self.base_url + 'Encounter.ndjson'
-        self.model = Encounter(db=self.db)
 
     def run(self):
         self.fetch()
@@ -18,15 +20,30 @@ class FHIREncounterResourceManager(FHIRResourcesManager):
         with requests.get(self.base_url, stream=True) as r:
             print('Request successful')
             items = r.json(cls=ndjson.Decoder)
-            self.process(items)
+            total_items = len(items)
+            print('There are ' + str(total_items) + ' encounters')
+            item_cursor = 0
+            batch_count = math.ceil(total_items / self.pool_count)
+            print('Splitting into ' + str(batch_count) + ' for each process')
+            to_item = batch_count
+            processes = []
+            for i in range(self.pool_count):
+                current_item = items[item_cursor:to_item]
+                item_cursor += batch_count
+                to_item += batch_count
+                p = Process(target=self.process, args=(current_item,))
+                processes.append(p)
 
-    def store(self, data):
+            [x.start() for x in processes]
+            [x.join() for x in processes]
+
+    def store(self, data, db):
         patient_query_data = {
             'fieldname': 'source_id',
             'value': data['patient'].replace('Patient/', '')
         }
 
-        patient_row = Patient(db=self.db).get(patient_query_data)
+        patient_row = Patient(db=db).get(patient_query_data)
         if patient_row is None:
             return None
         patient_id = patient_row[0]
@@ -34,6 +51,10 @@ class FHIREncounterResourceManager(FHIRResourcesManager):
         return self.model.insert(data=data)
 
     def process(self, encounters):
+        db = DB()
+        db.connect()
+        self.model = Encounter(db=db)
+        print('There are ' + str(len(encounters)) + ' to be processed in this batch')
         for encounter in encounters:
             source_id = encounter.get('id', None)
             patient = self.get_patient(encounter)
@@ -48,7 +69,10 @@ class FHIREncounterResourceManager(FHIRResourcesManager):
                 'type_code': type_code,
                 'type_code_system': type_code_system
             }
-            self.store(data)
+            self.store(data, db)
+
+        print('Done processing ' + str(len(encounters)) + ' for this batch ')
+        db.close()
 
     def get_patient(self, encounter):
 
