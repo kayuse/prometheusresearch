@@ -43,24 +43,28 @@ class FHIRPatientResourcesManager(FHIRResourcesManager):
         db = DB()
         db.connect()
         for patient in patients:
-            source_id = patient.get('id', None)
-            birth_date = patient.get('birthDate', None)
-            gender = patient.get('gender', None)
-            country = self.get_country(patient)
-            extensions = self.get_extensions(patient=patient)
-            data = {
-                'source_id': source_id,
-                'birth_date': birth_date,
-                'gender': gender,
-                'country': country,
-                'race_code': extensions['race'].get('code'),
-                'race_code_system': extensions['race'].get('system'),
-                'ethnicity_code': extensions['ethnicity'].get('code'),
-                'ethnicity_code_system': extensions['ethnicity'].get('system'),
-            }
-
+            data = self.run_patient(patient)
             self.store(data, db)
         db.close()
+
+    def run_patient(self, patient):
+        print("\n")
+        source_id = patient.get('id', None)
+        birth_date = patient.get('birthDate', None)
+        gender = patient.get('gender', None)
+        country = self.get_country(patient)
+        extensions = self.get_extensions(patient=patient)
+        data = {
+            'source_id': source_id,
+            'birth_date': birth_date,
+            'gender': gender,
+            'country': country,
+            'race_code': extensions['race'].get('code'),
+            'race_code_system': extensions['race'].get('system'),
+            'ethnicity_code': extensions['ethnicity'].get('code'),
+            'ethnicity_code_system': extensions['ethnicity'].get('system'),
+        }
+        return data
 
     def get_country(self, patient):
         address = patient.get('address', None)
