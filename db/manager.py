@@ -43,6 +43,8 @@ class App(BaseModel):
             if self.db.connection:
                 print("Failed to insert record into app table", error)
                 return None
+    def get_total_records(self):
+        pass
 
     def query(self, query):
         pass

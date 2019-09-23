@@ -7,7 +7,7 @@ import sys, requests, ndjson, math
 
 
 class FHIRObservationResourceManager(FHIRResourcesManager):
-    pool_count = 30
+    pool_count = 5
 
     def __init__(self):
         super().__init__()
@@ -57,8 +57,7 @@ class FHIRObservationResourceManager(FHIRResourcesManager):
             encounter_row = Encounter(db=db).get(encounter_query_data)
             if encounter_row is not None:
                 data['encounter_id'] = encounter_row[0]
-        if data.get('encounter_id') is None:
-            print(data)
+
         return self.model.insert(data=data)
 
     def process(self, observations):
@@ -82,6 +81,7 @@ class FHIRObservationResourceManager(FHIRResourcesManager):
             data = {**data, **self.get_type_value_data(observation)}
             if data['value'] is not None:
                 self.store(data, db)
+        db.close()
         print('Done processing ' + str(len(observations)) + ' for this batch ')
 
     def get_patient(self, observation):

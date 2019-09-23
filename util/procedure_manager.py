@@ -35,6 +35,7 @@ class FHIRProcedureResourceManager(FHIRResourcesManager):
                 p = Process(target=self.process, args=(current_item,))
                 processes.append(p)
             [x.start() for x in processes]
+            [x.join() for x in processes]
 
     def store(self, data, db):
         patient_query_data = {
