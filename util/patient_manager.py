@@ -48,7 +48,6 @@ class FHIRPatientResourcesManager(FHIRResourcesManager):
         db.close()
 
     def run_patient(self, patient):
-        print("\n")
         source_id = patient.get('id', None)
         birth_date = patient.get('birthDate', None)
         gender = patient.get('gender', None)

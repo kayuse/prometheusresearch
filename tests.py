@@ -1,6 +1,7 @@
 import unittest
 import ndjson, requests
 from util.patient_manager import FHIRPatientResourcesManager
+from util.encounter_manager import FHIREncounterResourceManager
 
 
 class TestPatient(unittest.TestCase):
@@ -23,6 +24,30 @@ class TestPatient(unittest.TestCase):
         }
 
         self.assertDictEqual(correct_data, data)
+
+    def test_encounter_process(self):
+        encounter = FHIREncounterResourceManager()
+        with open('test/encounter.ndjson') as f:
+            encounter_data = ndjson.load(f)
+
+        data = encounter.run_encounter_process(encounter_data[0])
+
+        self.assertNotEqual(data['source_id'], None)
+        self.assertNotEqual(data['patient'], None)
+        self.assertNotEqual(data['start_date'], None)
+        self.assertNotEqual(data['end_date'], None)
+
+    def test_procedure_process(self):
+        encounter = FHIREncounterResourceManager()
+        with open('test/encounter.ndjson') as f:
+            encounter_data = ndjson.load(f)
+
+        data = encounter.run_encounter_process(encounter_data[0])
+
+        self.assertNotEqual(data['source_id'], None)
+        self.assertNotEqual(data['patient'], None)
+        self.assertNotEqual(data['start_date'], None)
+        self.assertNotEqual(data['end_date'], None)
 
 
 if __name__ == '__main__':

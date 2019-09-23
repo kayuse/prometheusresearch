@@ -56,23 +56,27 @@ class FHIREncounterResourceManager(FHIRResourcesManager):
         self.model = Encounter(db=db)
         print('There are ' + str(len(encounters)) + ' to be processed in this batch')
         for encounter in encounters:
-            source_id = encounter.get('id', None)
-            patient = self.get_patient(encounter)
-            start_date = self.get_start_date(encounter)
-            end_date = self.get_end_date(encounter)
-            type_code, type_code_system = self.get_type_code_data(encounter)
-            data = {
-                'source_id': source_id,
-                'patient': patient,
-                'start_date': start_date,
-                'end_date': end_date,
-                'type_code': type_code,
-                'type_code_system': type_code_system
-            }
+            data = self.run_encounter_process(encounter)
             self.store(data, db)
 
         print('Done processing ' + str(len(encounters)) + ' for this batch ')
         db.close()
+
+    def run_encounter_process(self, encounter):
+        source_id = encounter.get('id', None)
+        patient = self.get_patient(encounter)
+        start_date = self.get_start_date(encounter)
+        end_date = self.get_end_date(encounter)
+        type_code, type_code_system = self.get_type_code_data(encounter)
+        data = {
+            'source_id': source_id,
+            'patient': patient,
+            'start_date': start_date,
+            'end_date': end_date,
+            'type_code': type_code,
+            'type_code_system': type_code_system
+        }
+        return data
 
     def get_patient(self, encounter):
 

@@ -17,6 +17,10 @@ Use the package manager [pip](https://pip.pypa.io/en/stable/) to install foobar.
 pip install -r requirements.txt
 configure db in the config.ini using your own db settings
 ```
+## Note
+This is a multiprocess event, so there is a tendency for it to take a chunk of your CPU Process while running. 
+This was done so as to enable the application to run faster. You can reduce the processor pool to you specified number 
+in each of the resource manager class.
 
 ## Usage
 
@@ -24,5 +28,7 @@ configure db in the config.ini using your own db settings
 1. Install all dependencies as described in the installation section above
 2. Run code using python run.py
 3. To run tests, python tests.py
+
+
 
 
