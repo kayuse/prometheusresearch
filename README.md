@@ -1,10 +1,12 @@
 # Prometheus Coding Test
 
-This is a short coding assignment, for Prometheus Research. I was told to implement a  REST API that calls an external API service to get information about books. Additionally, I also implemented a simple CRUD (Create, Read, Update, Delete) API with sqlite.
+This is a short coding assignment, for Prometheus Research. This is a Python command line utility that will create a database and perform a basic ETL process upon it.
+
 
 ## Dependencies
 
 You need postgres and python 3 to run this code
+Internet is needed to fetch data from remote source
 
 
 ## Installation
@@ -13,7 +15,7 @@ Use the package manager [pip](https://pip.pypa.io/en/stable/) to install foobar.
 
 ```bash
 pip install -r requirements.txt
-configure db in the config.ini usign your own db settings
+configure db in the config.ini using your own db settings
 ```
 
 ## Usage
