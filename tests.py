@@ -73,7 +73,7 @@ class TestConnection(unittest.TestCase):
     def test_connection(self):
         db = DB()
         db_connection = db.connect()
-        self.assertNotEqual(db_connection, None)
+        self.assertNotEqual(db_connection, None, 'DB Connection Tests has failed')
 
 
 if __name__ == '__main__':

@@ -28,6 +28,7 @@ in each of the resource manager class.
 1. Install all dependencies as described in the installation section above
 2. Run code using python run.py
 3. To run tests, python tests.py
+4. If you are not sure about DB connection, run the tests 
 
 
 
