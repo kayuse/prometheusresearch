@@ -15,14 +15,11 @@ class FHIRResourcesManager(ABC):
 
     @abstractmethod
     def run(self):
-        self.fetch()
+        pass
 
+    @abstractmethod
     def fetch(self):
-        print('About to begin fetching from ' + self.base_url)
-        with requests.get(self.base_url, stream=True) as r:
-            print('Request successful')
-            items = r.json(cls=ndjson.Decoder)
-            self.process(items)
+        pass
 
     @abstractmethod
     def process(self, data):

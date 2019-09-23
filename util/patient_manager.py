@@ -12,10 +12,14 @@ class FHIRPatientResourcesManager(FHIRResourcesManager):
         self.base_url = self.base_url + 'Patient.ndjson'
 
     def fetch(self):
-        super().fetch()
+        print('About to begin fetching from ' + self.base_url)
+        with requests.get(self.base_url, stream=True) as r:
+            print('Request successful')
+            items = r.json(cls=ndjson.Decoder)
+            self.process(items)
 
     def run(self):
-        super().run()
+        self.fetch()
 
     def process(self, patients):
         for patient in patients:
@@ -34,7 +38,7 @@ class FHIRPatientResourcesManager(FHIRResourcesManager):
                 'ethnicity_code': extensions['ethnicity'].get('code'),
                 'ethnicity_code_system': extensions['ethnicity'].get('system'),
             }
-            print(data)
+
 
             self.store(data)
 

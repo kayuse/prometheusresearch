@@ -1,6 +1,6 @@
 from .base_manager import FHIRResourcesManager
 from db.manager import Encounter, Patient
-import sys
+import sys, requests, ndjson
 
 
 class FHIREncounterResourceManager(FHIRResourcesManager):
@@ -11,10 +11,14 @@ class FHIREncounterResourceManager(FHIRResourcesManager):
         self.model = Encounter(db=self.db)
 
     def run(self):
-        pass
+        self.fetch()
 
     def fetch(self):
-        super().fetch()
+        print('About to begin fetching from ' + self.base_url)
+        with requests.get(self.base_url, stream=True) as r:
+            print('Request successful')
+            items = r.json(cls=ndjson.Decoder)
+            self.process(items)
 
     def store(self, data):
         patient_query_data = {

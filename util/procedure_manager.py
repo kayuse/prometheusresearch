@@ -1,7 +1,7 @@
 from .base_manager import FHIRResourcesManager
 from db.manager import Patient, Encounter, Procedure
 import dateutil.parser
-import sys
+import sys, requests, ndjson
 
 
 class FHIRProcedureResourceManager(FHIRResourcesManager):
@@ -15,7 +15,11 @@ class FHIRProcedureResourceManager(FHIRResourcesManager):
         self.fetch()
 
     def fetch(self):
-        super().fetch()
+        print('About to begin fetching from ' + self.base_url)
+        with requests.get(self.base_url, stream=True) as r:
+            print('Request successful')
+            items = r.json(cls=ndjson.Decoder)
+            self.process(items)
 
     def store(self, data):
         patient_query_data = {
@@ -36,8 +40,6 @@ class FHIRProcedureResourceManager(FHIRResourcesManager):
         encounter_row = Encounter(db=self.db).get(encounter_query_data)
         data['encounter_id'] = encounter_row[0]
         return self.model.insert(data=data)
-
-
 
     def process(self, procedures):
 

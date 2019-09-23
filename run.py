@@ -16,13 +16,13 @@ db.connect()
 print('connected to db')
 
 patient_resource_manager = FHIRPatientResourcesManager(db=db)
-# patient_resource_manager.run()
+patient_resource_manager.run()
 
 encounter_resource_manager = FHIREncounterResourceManager(db=db)
-# encounter_resource_manager.fetch()
+encounter_resource_manager.run()
 
 procedure_manager = FHIRProcedureResourceManager(db=db)
-# procedure_manager.run()
+procedure_manager.run()
 
 observation_manager = FHIRObservationResourceManager(db=db)
 observation_manager.run()

@@ -1,7 +1,7 @@
 from .base_manager import FHIRResourcesManager
 import dateutil.parser
 from db.manager import Patient, Encounter, Observation
-import sys
+import sys, requests, ndjson
 
 
 class FHIRObservationResourceManager(FHIRResourcesManager):
@@ -12,10 +12,14 @@ class FHIRObservationResourceManager(FHIRResourcesManager):
         self.model = Observation(db=self.db)
 
     def run(self):
-        super().run()
+        self.fetch()
 
     def fetch(self):
-        super().fetch()
+        print('About to begin fetching from ' + self.base_url)
+        with requests.get(self.base_url, stream=True) as r:
+            print('Request successful')
+            items = r.json(cls=ndjson.Decoder)
+            self.process(items)
 
     def store(self, data):
         patient_query_data = {
@@ -38,7 +42,7 @@ class FHIRObservationResourceManager(FHIRResourcesManager):
         return self.model.insert(data=data)
 
     def process(self, observations):
-        print('I have encounters')
+        print('About to begin processing observations')
         for observation in observations:
             source_id = observation.get('id', None)
             patient = self.get_patient(observation)
